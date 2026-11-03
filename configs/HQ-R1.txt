@@ -1,0 +1,118 @@
+!
+version 15.4
+no service timestamps log datetime msec
+no service timestamps debug datetime msec
+service password-encryption
+!
+hostname HQ-R1
+!
+!
+!
+enable secret 5 $1$mERr$9cTjUIEqNGurQiFU.ZeCi1
+!
+!
+ip dhcp excluded-address 10.1.10.1 10.1.10.10
+ip dhcp excluded-address 10.1.20.1 10.1.20.10
+ip dhcp excluded-address 10.2.10.1 10.2.10.10
+ip dhcp excluded-address 10.2.20.1 10.2.20.10
+!
+ip dhcp pool HQ-STAFF
+ network 10.1.10.0 255.255.255.0
+ default-router 10.1.10.1
+ip dhcp pool HQ-GUEST
+ network 10.1.20.0 255.255.255.0
+ default-router 10.1.20.1
+ip dhcp pool BR-STAFF
+ network 10.2.10.0 255.255.255.0
+ default-router 10.2.10.1
+ip dhcp pool BR-GUEST
+ network 10.2.20.0 255.255.255.0
+ default-router 10.2.20.1
+!
+!
+!
+no ip cef
+no ipv6 cef
+!
+!
+!
+username admin secret 5 $1$mERr$9cTjUIEqNGurQiFU.ZeCi1
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+ip ssh version 2
+no ip domain-lookup
+ip domain-name lab.local
+!
+!
+spanning-tree mode pvst
+!
+!
+!
+!
+!
+!
+interface GigabitEthernet0/0/0
+ description Link to ISP
+ ip address 203.0.113.2 255.255.255.252
+ ip nat outside
+ duplex auto
+ speed auto
+!
+interface GigabitEthernet0/0/1
+ description WAN to BR-R1
+ ip address 10.0.0.1 255.255.255.252
+ ip nat inside
+ duplex auto
+ speed auto
+!
+interface GigabitEthernet0/0/2
+ description Link to HQ-CORE
+ ip address 10.1.0.1 255.255.255.252
+ ip nat inside
+ duplex auto
+ speed auto
+!
+router ospf 1
+ router-id 1.1.1.1
+ log-adjacency-changes
+ network 10.0.0.0 0.0.0.3 area 0
+ network 10.1.0.0 0.0.0.3 area 0
+ default-information originate
+!
+ip nat inside source list 1 interface GigabitEthernet0/0/0 overload
+ip classless
+ip route 0.0.0.0 0.0.0.0 203.0.113.1 
+!
+ip flow-export version 9
+!
+!
+access-list 1 permit 10.0.0.0 0.255.255.255
+!
+banner motd # Authorized access only. Disconnect now if you are not authorized. #
+!
+!
+!
+!
+line con 0
+ password 7 0822455D0A16
+ logging synchronous
+ login
+!
+line aux 0
+!
+line vty 0 4
+ login local
+ transport input ssh
+!
+!
+!
+end
+
